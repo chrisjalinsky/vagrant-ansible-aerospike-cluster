@@ -1,0 +1,66 @@
+- name: Check if aerospike server pkg is installed
+  command: dpkg-query -W -f='${Package} ${Version}' aerospike-server-community
+  register: as_server_pkg_check_deb
+  failed_when: "'aerospike-server-community {{ aerospike_version }}' not in as_server_pkg_check_deb.stdout"
+  changed_when: "'aerospike-server-community {{ aerospike_version }}' in as_server_pkg_check_deb.stdout"
+  ignore_errors: yes
+  tags: aerospike
+  
+- name: Check if aerospike tools pkg is installed
+  command: dpkg-query -W -f='${Package} ${Version}' aerospike-tools
+  register: as_tools_pkg_check_deb
+  failed_when: "'aerospike-tools {{ aerospike_tools_version }}' not in as_tools_pkg_check_deb.stdout"
+  changed_when: "'aerospike-tools {{ aerospike_tools_version }}' in as_tools_pkg_check_deb.stdout"
+  ignore_errors: yes
+  tags: aerospike
+  
+- name: Verify {{ temp_folder }}/aerospike folder is present
+  file: path={{ temp_folder }}/aerospike state=directory
+  when: as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed
+  tags: aerospike
+
+- name: Download Aerospike package to {{ temp_folder }}/aerospike folder
+  get_url: url=http://www.aerospike.com/cgi/artifact.php?/download/server/{{ aerospike_version }}/artifact/ubuntu12
+           dest={{ temp_folder }}/aerospike/aerospike-{{ aerospike_version }}.tgz
+  register: aerospike_downloaded
+  when: as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed
+  tags: aerospike
+
+- name: Extract Aerospike tar file to {{ temp_folder }}/aerospike
+  unarchive: src={{ temp_folder }}/aerospike/aerospike-{{ aerospike_version }}.tgz
+             dest={{ temp_folder }}/aerospike
+             copy=no
+  register: aerospike_extracted
+  when: as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed
+  tags: aerospike
+  
+- name: Run Aerospike installer script
+  shell: ./asinstall chdir={{ temp_folder }}/aerospike/aerospike-server-community-{{ aerospike_version }}-ubuntu12.04
+  sudo: yes
+  register: aerospike_installed
+  when: as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed
+  tags: aerospike
+
+- name: Load /etc/aerospike.conf from template
+  template: src=aerospike.conf.j2 dest=/etc/aerospike/aerospike.conf owner=root group=root
+  register: aerospike_config_loaded
+  when: aerospike_installed|success or (as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed)
+  sudo: yes
+  tags: aerospike
+  
+- name: Ensure /etc/init.d/aerospike is restarted
+  service: name=aerospike
+           state=restarted 
+           pattern=/etc/init.d/aerospike
+           sleep=2
+           enabled=yes
+  register: aerospike_restarted
+  when: aerospike_config_loaded|success or (as_server_pkg_check_deb|changed and as_tools_pkg_check_deb|changed)
+  sudo: yes
+  tags: aerospike
+
+- name: Clean up {{ temp_folder }}/aerospike extraction files on successful install
+  shell: rm -rf {{ temp_folder }}/aerospike
+  sudo: yes
+  when: aerospike_installed|success and aerospike_restarted|success and as_server_pkg_check_deb|failed or as_tools_pkg_check_deb|failed
+  tags: aerospike 

@@ -1,0 +1,43 @@
+---
+aerospike_version: "3.5.14"
+aerospike_tools_version: "3.5.11"
+temp_folder: "/tmp"
+
+service_user: "root"
+service_group: "root"
+service_paxos_single_replica_limit: "1"
+service_pidfile: "/var/run/aerospike/asd.pid"
+service_threads: "4"
+service_transaction_queues: "4"
+service_transaction_threads_per_queue: "4"
+service_proto_fd_max: "15000"
+
+logging_file: "/var/log/aerospike/aerospike.log"
+logging_file_content: "context any info"
+
+network_service_address: "any"
+network_mode: "mesh"
+network_port: "3000"
+network_mode_port: "3002"
+network_fabric_port: "3001"
+network_info_port: "3003"
+network_heartbeat_interval: "150"
+network_heartbeat_timeout: "10"
+
+namespaces:
+  - ns_name: "test"
+    default_ttl: "30d"
+    replication_factor: "2"
+    memory_size: "3G"
+    storage_engine: "memory"
+    match_device: ""
+
+  - ns_name: "bar"
+    default_ttl: "30d"
+    replication_factor: "2"
+    memory_size: "3G"
+    storage_engine: "both"
+    device: "/dev/sdb"
+    match_device: "sdb"
+    device_file: "/opt/aerospike/data/bar.dat"
+    device_filesize: "16G"

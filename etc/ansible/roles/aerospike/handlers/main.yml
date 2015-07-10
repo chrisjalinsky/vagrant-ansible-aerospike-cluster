@@ -1,0 +1,18 @@
+---
+- name: Start Aerospike
+  service: name=aerospike
+           state=started
+           pattern=/etc/init.d/aerospike
+  sudo: yes
+
+- name: Restart Aerospike
+  service: name=aerospike
+           state=restarted
+           pattern=/etc/init.d/aerospike
+  sudo: yes
+  
+- name: Stop Aerospike
+  service: name=aerospike
+           state=stopped
+           pattern=/etc/init.d/aerospike
+  sudo: yes

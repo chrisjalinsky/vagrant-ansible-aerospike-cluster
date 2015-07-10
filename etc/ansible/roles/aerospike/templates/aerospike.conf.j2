@@ -1,0 +1,96 @@
+# Aerospike database configuration file.
+
+service {
+	user {{ service_user }}
+	group {{ service_group }}
+	paxos-single-replica-limit {{ service_paxos_single_replica_limit }}
+	pidfile {{ service_pidfile }}
+	service-threads {{ service_threads }}
+	transaction-queues {{ service_transaction_queues }}
+	transaction-threads-per-queue {{ service_transaction_threads_per_queue }}
+	proto-fd-max {{ service_proto_fd_max }}
+}
+
+logging {
+	# Log file must be an absolute path.
+	file {{ logging_file }} {
+		{{ logging_file_content }}
+	}
+}
+
+network {
+	service {
+		address {{ network_service_address }}
+		port {{ network_port }}
+		access-address {{ PRIV_IP }}
+	}
+
+	heartbeat {
+		mode {{ network_mode }}
+		address {{ PRIV_IP }}
+		interface-address {{ PRIV_IP }}
+		port {{ network_mode_port }}
+
+		# To use unicast-mesh heartbeats, remove the 3 lines above, and see
+		# aerospike_mesh.conf for alternative.
+    {% for host in groups['aerospike_db_servers'] %}
+    {% if hostvars[host]['PRIV_IP'] %}
+    mesh-seed-address-port {{ hostvars[host]['PRIV_IP'] }} {{ network_mode_port }}
+    {% endif %}
+    {% endfor %}
+
+		interval {{ network_heartbeat_interval }}
+		timeout {{ network_heartbeat_timeout }}
+	}
+
+	fabric {
+		port {{ network_fabric_port }}
+	}
+
+	info {
+		port {{ network_info_port }}
+	}
+}
+
+{% for ns in namespaces %}
+
+{% if ns['storage_engine'] == 'memory' %}
+namespace {{ ns['ns_name'] }} {
+    default-ttl {{ ns['default_ttl'] }}
+    replication-factor {{ ns['replication_factor'] }}
+    memory-size {{ ns['memory_size'] }}
+    storage-engine memory
+}
+{% endif %}
+
+{% if ns['storage_engine'] == 'both' and ( ns['match_device'] in ansible_devices ) %}
+namespace {{ ns['ns_name'] }} {
+  	replication-factor {{ ns['replication_factor'] }}
+  	memory-size {{ ns['memory_size'] }}
+  	default-ttl {{ ns['default_ttl'] }}
+  
+  	storage-engine memory
+  
+  	# To use file storage backing, comment out the line above and use the
+  	# following lines instead.
+  #	storage-engine device {
+  #		file {{ ns['device_file'] }}
+  #		filesize {{ ns['device_filesize'] }}
+  #		data-in-memory true # Store data in memory in addition to file.
+  #	}
+}
+{% endif %}
+
+{% if ns['storage_engine'] == 'device' and ( ns['match_device'] in ansible_devices ) %}
+namespace {{ ns['ns_name'] }} {
+    default-ttl {{ ns['default_ttl'] }}
+    replication-factor {{ ns['replication_factor'] }}
+    memory-size {{ ns['memory_size'] }}
+    storage-engine device {
+        device {{ ns['device'] }}
+        write-block-size {{ ns['write_block_size'] }}
+    }
+}
+{% endif %}
+
+{% endfor %}

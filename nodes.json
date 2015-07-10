@@ -1,0 +1,43 @@
+{
+  "nodes": {
+    "aero1": {
+      ":ip": "10.0.0.2",
+      "ports": [
+        {":host": 3000, ":guest":3000, ":id":3000 },
+        {":host": 3001, ":guest":3001, ":id":3001 },
+        {":host": 3002, ":guest":3002, ":id":3002 },
+        {":host": 3003, ":guest":3003, ":id":3003 },
+        {":host": 8080, ":guest":80, ":id":3004 }
+      ],
+      ":memory": 512,
+      ":bootstrap": "bootstrap-ansible.sh",
+      "box": "ubuntu/trusty64"
+    },
+    "aero2": {
+      ":ip": "10.0.0.5",
+      "ports": [
+        {":host": 3010, ":guest":3000, ":id":3010 },
+        {":host": 3011, ":guest":3001, ":id":3011 },
+        {":host": 3012, ":guest":3002, ":id":3012 },
+        {":host": 3013, ":guest":3003, ":id":3013 },
+        {":host": 8081, ":guest":80, ":id":3014 }
+      ],
+      ":memory": 512,
+      ":bootstrap": "bootstrap-master.sh",
+      "box": "ubuntu/trusty64"
+    },
+    "aero3": {
+      ":ip": "10.0.0.100",
+      "ports": [
+        {":host": 3020, ":guest":3000, ":id":3020 },
+        {":host": 3021, ":guest":3001, ":id":3021 },
+        {":host": 3022, ":guest":3002, ":id":3022 },
+        {":host": 3023, ":guest":3003, ":id":3023 },
+        {":host": 8082, ":guest":80, ":id":3024 }
+      ],
+      ":memory": 512,
+      ":bootstrap": "bootstrap-master.sh",
+      "box": "ubuntu/trusty64"
+    }
+  }
+}

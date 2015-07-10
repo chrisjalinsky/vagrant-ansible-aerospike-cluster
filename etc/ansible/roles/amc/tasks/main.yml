@@ -1,0 +1,73 @@
+- name: Check if amc_pkg is installed
+  command: dpkg-query -W -f='${Package} ${Version}' aerospike-amc-community
+  register: amc_pkg_check_deb
+  failed_when: "'aerospike-amc-community {{ amc_version }}' not in amc_pkg_check_deb.stdout"
+  changed_when: "'aerospike-amc-community {{ amc_version }}' in amc_pkg_check_deb.stdout"
+  ignore_errors: yes
+  tags: amc
+
+- name: Update apt
+  apt: update_cache=yes
+       cache_valid_time=86400
+  sudo: yes
+  when: amc_pkg_check_deb|failed
+  tags: amc
+
+- name: Ensure apt-get python is installed
+  apt: name=python state=present
+  sudo: yes
+  tags: amc
+
+- name: Ensure apt-get python-dev is installed
+  apt: name=python-dev state=present
+  sudo: yes
+  tags: amc
+
+- name: Ensure apt-get gcc is installed
+  apt: name=gcc state=present
+  sudo: yes
+  tags: amc
+
+- name: Assure {{ temp_folder  }}/amc dir exists
+  file: path={{ temp_folder }}/amc state=directory
+  when: amc_pkg_check_deb|failed
+  tags: amc
+
+- name: Download Aerospike Management Console deb package to {{ temp_folder }}/amc folder
+  get_url: url=http://www.aerospike.com/download/amc/{{ amc_version }}/artifact/ubuntu12 dest={{ temp_folder }}/amc/aerospike-amc-community-{{ amc_version }}.all.x86_64.deb
+  register: amc_downloaded
+  when: amc_pkg_check_deb|failed
+  tags: amc
+
+#- name: Install deb package
+#  apt: deb={{ temp_folder }}/amc/aerospike-amc-community-{{ amc_version }}.all.x86_64.deb
+#       state=present
+#       force=yes
+#  register: amc_deb_installed
+#  when: amc_pkg_check_deb|failed and amc_downloaded|success
+#  sudo: yes
+
+- name: Install deb package
+  shell: dpkg -i {{ temp_folder }}/amc/aerospike-amc-community-{{ amc_version }}.all.x86_64.deb
+  register: amc_deb_installed
+  when: amc_pkg_check_deb|failed and amc_downloaded|success
+  failed_when: "'Successfully installed AMC' not in amc_deb_installed.stdout"
+  sudo: yes
+  tags: amc
+
+- name: Ensure /etc/init.d/amc is restarted
+  service: name=amc
+           state=restarted 
+           pattern=/etc/init.d/amc
+           sleep=2
+           enabled=yes
+  register: amc_restarted
+  when: amc_deb_installed|success or amc_pkg_check_deb|changed
+  sudo: yes
+  tags: amc
+
+- name: Clean up {{ temp_folder }}/amc extraction files on successful install
+  shell: rm -rf {{ temp_folder }}/amc
+  sudo: yes
+  when: amc_deb_installed|success and amc_restarted|success and amc_pkg_check_deb|failed
+  tags: amc

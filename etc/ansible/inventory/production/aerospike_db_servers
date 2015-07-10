@@ -1,0 +1,4 @@
+[aerospike_db_servers]
+aero1.dev.lan
+aero2.dev.lan
+aero3.dev.lan

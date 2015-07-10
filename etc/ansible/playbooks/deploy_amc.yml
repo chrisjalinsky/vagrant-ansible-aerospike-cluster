@@ -1,0 +1,4 @@
+---
+- hosts: amc_monitors
+  roles:
+    - amc

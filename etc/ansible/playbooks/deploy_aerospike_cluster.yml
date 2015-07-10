@@ -1,0 +1,4 @@
+---
+- hosts: aerospike_db_servers
+  roles:
+    - aerospike
