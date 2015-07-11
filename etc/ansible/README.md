@@ -4,9 +4,9 @@ The Vagrant VMs are not provisioned using the ansible provisioner. It was create
 
 The default vagrant up will create 3 VMs:
 
-aero1
-aero2
-aero3
+aero1  
+aero2  
+aero3  
 
 aero1 is the ansible server, and all 3 vms are configured to be Aerospike nodes.
 
@@ -19,13 +19,13 @@ To run the Ansible playbook which deploys a 3 node Aerospike cluster:
 log in to aero1:
 vagrant ssh aero1
 
-Run the playbook for the Aerospike cluster:
+Run the playbook for the Aerospike cluster:  
 ansible-playbook /etc/ansible/playbooks/deploy_aerospike_cluster.yml -i /etc/ansible/inventory/production -u vagrant -k
 
 vagrant is the default SSH password for the vagrant user
 
-Then run the playbook to deploy the Aerospike Monitoring Console on aero1
+Then run the playbook to deploy the Aerospike Monitoring Console on aero1:  
 ansible-playbook /etc/ansible/playbooks/deploy_amc.yml -i /etc/ansible/inventory/production -u vagrant -k
 
-NOTE: I had to add a route to my host only adapter Virtualbox network to view the AMC console (my device is called vboxnet14):
+NOTE: I had to add a route to my host only adapter Virtualbox network to view the AMC console (my device is called vboxnet14):  
 sudo route -nv add -net 10.0.0.1/24 -interface vboxnet14
