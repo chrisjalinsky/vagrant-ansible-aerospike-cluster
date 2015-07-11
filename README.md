@@ -38,3 +38,8 @@ Then run the playbook to deploy the Aerospike Monitoring Console on aero1:
 
 NOTE: I had to add a route to my host only adapter Virtualbox network to view the AMC console (my device is called vboxnet14):  
     <code>sudo route -nv add -net 10.0.0.1/24 -interface vboxnet14</code>  
+
+
+The bootstrap files provision the VMs with basic networking. Routing needs to be configured in Vagrant/Virtualbox to allow the host only adapters to communicate with one another. The next steps will be to allow DHCP to control the networking aspect of this project.  
+
+Being new to both Ansible and Aerospike, any help, ideas or feedback would be appreciated and considered.  
