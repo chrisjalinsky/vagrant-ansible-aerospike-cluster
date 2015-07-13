@@ -40,6 +40,10 @@ NOTE: I had to add a route to my host only adapter Virtualbox network to view th
     <pre><code>sudo route -nv add -net 10.0.0.1/24 -interface vboxnet14</code></pre>  
 
 
-The bootstrap files provision the VMs with basic networking. Routing needs to be configured in Vagrant/Virtualbox to allow the host only adapters to communicate with one another. The next steps will be to allow DHCP to control the networking aspect of this project.  
+The bootstrap files provision the VMs with basic networking. Routing needs to be configured in Vagrant/Virtualbox to allow the host only adapters to communicate with one another. I received some awesome advice from the following StackOverflow question:  
+
+<a href="http://stackoverflow.com/questions/31375598/aerospike-community-edition-what-should-i-do-to-aerospike-conf-to-setup-a-clu" >http://stackoverflow.com/questions/31375598/aerospike-community-edition-what-should-i-do-to-aerospike-conf-to-setup-a-clu</a>. This fixes the Vagrant Virtualbox VMs cluster inability to communicate with each other. You have to explicitly define the network interface in the aerospike.conf network.settings stanza. This can be set via Ansible in the host_vars/ inventory files. 
+
+The next steps will be to allow DHCP to control the networking aspect of this project.  
 
 Being new to both Ansible and Aerospike, any help, ideas or feedback would be appreciated and considered.  
