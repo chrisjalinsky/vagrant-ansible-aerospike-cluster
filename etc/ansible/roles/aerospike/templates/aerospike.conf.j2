@@ -23,6 +23,7 @@ network {
 		address {{ network_service_address }}
 		port {{ network_port }}
 		access-address {{ PRIV_IP }}
+		network-interface-name {{ AEROSPIKE_CLUSTER_INTERFACE }}
 	}
 
 	heartbeat {
